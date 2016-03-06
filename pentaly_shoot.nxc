@@ -1,0 +1,114 @@
+#define LEFT_MOTOR  OUT_C
+#define RIGHT_MOTOR OUT_B
+
+#define US_SENSOR SensorUS(IN_3)
+#define TORCH_SENSOR Sensor(IN_1)
+#define BALL_SENSOR Sensor(IN_2)
+
+task main(){
+
+//set sensors
+SetSensorLight(IN_1);
+SetSensorLight(IN_2);
+SetSensorUltrasonic(IN_3);
+
+SetSensorType(IN_1,IN_TYPE_LIGHT_INACTIVE);
+SetSensorMode(IN_1,IN_MODE_PCTFULLSCALE);
+ResetSensor(IN_1);
+
+bool back_back_turn_taken = false;
+
+
+while(true){
+
+//go straight
+OnFwd(LEFT_MOTOR, 40);
+OnFwd(RIGHT_MOTOR, 40);
+Wait(2500);
+
+while (true) {
+
+		TextOut(1,LCD_LINE1,"TORCH SENSOR");
+		NumOut(2,LCD_LINE2,TORCH_SENSOR);
+
+		if (TORCH_SENSOR > 40) {
+			//RotateMotor(OUT_A, 95, +180);
+			//Wait(300);
+			 OnFwd(LEFT_MOTOR, 25);
+  			 OnFwd(RIGHT_MOTOR, 25); 
+    		Wait(1500);
+  
+			break;
+		}
+		//rotate robot to initite the search 
+		OnFwd(LEFT_MOTOR, 30);
+    	OnFwd(RIGHT_MOTOR, 5);
+    	//Wait(100);
+    	//dia = dia + 1;
+
+    }
+   	
+  	while (true) {
+
+  	OnFwd(LEFT_MOTOR, 25);
+    OnFwd(RIGHT_MOTOR, 25);
+    //Wait(500);
+
+	if (TORCH_SENSOR > 40){
+
+			//upclose release ball
+
+			//kick
+    		RotateMotor(OUT_A, 95, +180);
+			Wait(300);
+			break;
+	}
+}
+
+break;
+  
+  if (back_back_turn_taken==false){
+	//do a 180 degree turn
+	OnFwd(LEFT_MOTOR, 60);
+	OnFwd(RIGHT_MOTOR, 10);
+	
+	Wait(3000); 
+
+	back_back_turn_taken = true;
+	
+	OnFwd(LEFT_MOTOR, 10);
+	OnFwd(RIGHT_MOTOR,90);
+	Wait(700);
+
+	OnFwd(LEFT_MOTOR, 21);
+	OnFwd(RIGHT_MOTOR,20);
+	Wait(1250);
+  
+  	}
+
+  if (back_back_turn_taken==true){
+  	//charge 
+    OnFwd(LEFT_MOTOR, 40);
+	OnFwd(RIGHT_MOTOR,37);
+	Wait(200);
+
+	//kick
+    RotateMotor(OUT_A, 75, +180);
+    Wait(300);
+
+    break;
+
+    }
+  }
+
+}
+
+//do torch following
+
+//TextOut(1,LCD_LINE1,"TORCH SENSOR");
+//NumOut(2,LCD_LINE2,TORCH_SENSOR);
+
+//TextOut(1,LCD_LINE3,"Light Sensorval:");
+//NumOut(2,LCD_LINE4,lightsensor_val);
+
+}

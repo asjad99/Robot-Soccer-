@@ -1,0 +1,212 @@
+
+//motors and which ports they are connected
+#define LEFT_MOTOR  OUT_C
+#define RIGHT_MOTOR OUT_B
+#define US_SENSOR SensorUS(IN_3)
+
+
+#define TORCH_SENSOR Sensor(IN_1)
+#define BALL_SENSOR Sensor(IN_2)
+
+//variable declarations
+
+int CURRENT_READING = 0;
+int PREVIOUS_READING = 0;
+bool BALL_FOUND = false;
+bool CIRCLE_SCAN = true;
+
+sub initial_scan(){
+
+}
+
+sub search_light(){
+
+	int counter = 0;
+	int dia = 0;
+	dia = 20; 
+	
+	while (true) {
+
+		TextOut(1,LCD_LINE1,"TORCH SENSOR");
+		NumOut(2,LCD_LINE2,TORCH_SENSOR);
+
+		if (TORCH_SENSOR > 40) {
+			break;
+		}
+		//rotate robot to initite the search 
+		OnFwd(LEFT_MOTOR, 35);
+    	OnFwd(RIGHT_MOTOR, 5);
+    	Wait(100);
+    	dia = dia + 1;
+
+    	counter = counter + 1;
+    }
+}
+  
+ sub approach_light(){
+ 	
+ 	OnFwd(LEFT_MOTOR, 25);
+    OnFwd(RIGHT_MOTOR, 25);
+ 	Wait(1000);
+ 	
+ 	while(true){
+ 		
+		OnFwd(LEFT_MOTOR, 25);
+    	OnFwd(RIGHT_MOTOR, 25);
+    	//Wait(1500);
+
+    	if (TORCH_SENSOR > 40){
+			//upclose release ball
+
+			//kick
+    		RotateMotor(OUT_A, 95, +180);
+			//Wait(300);
+			break;
+		}
+    }
+
+ }
+
+task avoid_walls(){
+	
+	//OnRev(LEFT_MOTOR, 35);
+    //OnRev(RIGHT_MOTOR, 5);
+	int difference = 0;
+
+	Wait(1500);
+
+	while(true){
+	TextOut(1,LCD_LINE1,"US sensor");
+	NumOut(2,LCD_LINE2,US_SENSOR);
+	//TextOut(1,LCD_LINE3,"PREVIOUS_READING");
+	//NumOut(2,LCD_LINE4,PREVIOUS_READING);
+	//TextOut(1,LCD_LINE5,"CURRENT_READING");
+	//NumOut(2,LCD_LINE6,CURRENT_READING);
+	
+	//Wait(100);
+
+	if  (BALL_FOUND == false && CIRCLE_SCAN==true) {
+
+		//rotate robot to initite the search 
+		OnFwd(LEFT_MOTOR, 50);
+    	OnFwd(RIGHT_MOTOR, 10);
+
+		CURRENT_READING =  US_SENSOR;
+		
+		difference = PREVIOUS_READING - CURRENT_READING;
+
+		//stop scanning if ball is found
+		if (difference > 10) {
+			CIRCLE_SCAN=false;
+			//break;
+		}
+
+		PREVIOUS_READING = CURRENT_READING;
+	}
+
+	if(BALL_FOUND == false) {
+
+		//initial_scan();
+
+		ClearScreen();
+		TextOut(1,LCD_LINE1,"US SENSOR");
+		NumOut(2,LCD_LINE2,US_SENSOR);
+		//Wait(100);
+		
+    	if (US_SENSOR < 22) {
+
+    		if (US_SENSOR < 7) {
+
+   			 	OnRev(LEFT_MOTOR, 35);
+    	    	OnRev(RIGHT_MOTOR, 35);
+    	    	
+    	    	Wait(3000);
+
+    	    	OnFwd(LEFT_MOTOR, 25);
+    			OnFwd(RIGHT_MOTOR, 15);
+
+    			Wait(1000);
+   			 }
+    		
+    		else
+    		{
+    			OnFwd(LEFT_MOTOR, 15);
+    			OnFwd(RIGHT_MOTOR, 15);
+    			Wait(100);
+
+    		}
+
+    	}
+    	else{
+    		OnFwd(LEFT_MOTOR, 25);
+    		OnFwd(RIGHT_MOTOR, 25);
+
+    	}
+     }
+   }
+	
+}
+
+task search_ball(){
+
+while(true){
+	
+	if (BALL_SENSOR < 25){	
+
+				//override the avoid wall function
+				BALL_FOUND = true;
+
+				Wait(200);
+
+    			//back up a little  
+    			OnRev(LEFT_MOTOR, 26);
+    	    	OnRev(RIGHT_MOTOR, 26);
+    	    	Wait(500);
+
+    	    	//OnFwd(LEFT_MOTOR, 0);
+    	    	//OnFwd(RIGHT_MOTOR, 0);
+    	    	//Wait(200);
+
+    			//put the kicker down
+   				 RotateMotor(OUT_A, 75, -180);
+   				 //Wait(300);
+
+   				search_light();
+
+				approach_light();
+
+				OnRev(LEFT_MOTOR, 35);
+    			OnRev(RIGHT_MOTOR, 15);
+    
+    			Wait(3500);
+
+    			BALL_FOUND = false;	
+    			CIRCLE_SCAN = true;    	
+   			 }
+	}
+
+}
+
+
+
+
+task main(){
+
+//set sensor
+SetSensorUltrasonic(IN_3);
+
+SetSensorLight(IN_1);
+SetSensorType(IN_1,IN_TYPE_LIGHT_INACTIVE);
+SetSensorMode(IN_1,IN_MODE_PCTFULLSCALE);
+ResetSensor(IN_1);
+
+SetSensorLight(IN_2);
+
+//scan the field
+
+//should be inside while loop
+
+Precedes(avoid_walls,search_ball);
+
+
+}
